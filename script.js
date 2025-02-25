@@ -44,11 +44,19 @@ document.querySelectorAll('.close-modal').forEach(button => {
 // Validar campos de entrada
 function validateInputs(studentName, studentGrade, studentPin) {
     if (!studentName || !studentGrade || !studentPin) {
-        alert("Por favor, complete todos los campos.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Por favor, complete todos los campos.',
+        });
         return false;
     }
     if (studentPin.length !== 4 || isNaN(studentPin)) {
-        alert("El PIN debe ser un número de 4 dígitos.");
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'El PIN debe ser un número de 4 dígitos.',
+        });
         return false;
     }
     return true;
@@ -95,7 +103,11 @@ document.getElementById('login-btn').addEventListener('click', function() {
 document.querySelectorAll('.upload-btn').forEach(button => {
     button.addEventListener('click', function() {
         if (!currentStudent) {
-            alert("Por favor, inicie sesión primero.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Por favor, inicie sesión primero.',
+            });
             return;
         }
 
@@ -122,10 +134,19 @@ document.querySelectorAll('.upload-btn').forEach(button => {
 
                     currentStudent.tasks.push(task);
                     saveData();
-                    alert("Archivo subido correctamente.");
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: 'Archivo subido correctamente.',
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    });
                 } catch (error) {
                     console.error("Error al convertir el archivo a base64:", error);
-                    alert("Hubo un error al subir el archivo. Inténtalo de nuevo.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Hubo un error al subir el archivo. Inténtalo de nuevo.',
+                    });
                 }
             }
         };
@@ -137,7 +158,11 @@ document.querySelectorAll('.upload-btn').forEach(button => {
 document.querySelectorAll('.take-photo-btn').forEach(button => {
     button.addEventListener('click', function() {
         if (!currentStudent) {
-            alert("Por favor, inicie sesión primero.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Por favor, inicie sesión primero.',
+            });
             return;
         }
 
@@ -225,7 +250,11 @@ document.querySelectorAll('.take-photo-btn').forEach(button => {
                 })
                 .catch(error => {
                     console.error("Error accediendo a la cámara: ", error);
-                    alert("No se pudo acceder a la cámara. Asegúrate de permitir el acceso.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'No se pudo acceder a la cámara. Asegúrate de permitir el acceso.',
+                    });
                     cameraContainer.remove(); // Eliminar el contenedor si hay un error
                 });
         }
@@ -266,10 +295,19 @@ document.querySelectorAll('.take-photo-btn').forEach(button => {
 
                     currentStudent.tasks.push(task);
                     saveData();
-                    alert("Foto subida correctamente.");
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: 'Foto subida correctamente.',
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    });
                 } catch (error) {
                     console.error("Error al convertir la foto a base64:", error);
-                    alert("Hubo un error al capturar la foto. Inténtalo de nuevo.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Hubo un error al capturar la foto. Inténtalo de nuevo.',
+                    });
                 }
             }, 'image/jpeg');
 
@@ -292,7 +330,11 @@ document.querySelectorAll('.take-photo-btn').forEach(button => {
 document.querySelectorAll('.view-files-btn').forEach(button => {
     button.addEventListener('click', function() {
         if (!currentStudent) {
-            alert("Por favor, inicie sesión primero.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Por favor, inicie sesión primero.',
+            });
             return;
         }
 
@@ -302,7 +344,11 @@ document.querySelectorAll('.view-files-btn').forEach(button => {
             .map(task => task.file);
 
         if (files.length === 0) {
-            alert("No hay archivos subidos en este curso.");
+            Swal.fire({
+                icon: 'info',
+                title: 'Oops...',
+                text: 'No hay archivos subidos en este curso.',
+            });
             return;
         }
 
@@ -354,7 +400,11 @@ document.querySelectorAll('.view-files-btn').forEach(button => {
 document.querySelectorAll('.view-photos-btn').forEach(button => {
     button.addEventListener('click', function() {
         if (!currentStudent) {
-            alert("Por favor, inicie sesión primero.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Por favor, inicie sesión primero.',
+            });
             return;
         }
 
@@ -364,7 +414,11 @@ document.querySelectorAll('.view-photos-btn').forEach(button => {
             .map(task => task.file);
 
         if (photos.length === 0) {
-            alert("No hay fotos subidas en este curso.");
+            Swal.fire({
+                icon: 'info',
+                title: 'Oops...',
+                text: 'No hay fotos subidas en este curso.',
+            });
             return;
         }
 
@@ -425,7 +479,11 @@ document.getElementById('switch-interface').addEventListener('click', function()
                 displayAdminTasks();
                 modal.style.display = 'none';
             } else {
-                alert("PIN incorrecto");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'PIN incorrecto',
+                });
             }
         });
     } else {
@@ -453,11 +511,26 @@ function displayAdminTasks() {
         const deleteUserButton = document.createElement('button');
         deleteUserButton.textContent = 'Eliminar Usuario';
         deleteUserButton.addEventListener('click', function() {
-            if (confirm(`¿Estás seguro de que deseas eliminar a ${student.name}?`)) {
-                students.splice(index, 1); // Eliminar el usuario del array
-                saveData();
-                displayAdminTasks(); // Actualizar la interfaz
-            }
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `¿Estás seguro de que deseas eliminar a ${student.name}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    students.splice(index, 1); // Eliminar el usuario del array
+                    saveData();
+                    displayAdminTasks(); // Actualizar la interfaz
+                    Swal.fire(
+                        '¡Eliminado!',
+                        'El usuario ha sido eliminado.',
+                        'success'
+                    );
+                }
+            });
         });
 
         studentDiv.appendChild(deleteUserButton);
@@ -507,15 +580,37 @@ function displayAdminTasks() {
                 task.grade = gradeInput.value;
                 task.comment = commentInput.value;
                 saveData();
-                alert("Calificación y comentario subidos correctamente.");
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Calificación y comentario subidos correctamente.',
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar'
+                });
             });
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Eliminar';
             deleteButton.addEventListener('click', function() {
-                student.tasks = student.tasks.filter(t => t.id !== task.id);
-                saveData();
-                displayAdminTasks();
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: '¿Estás seguro de que deseas eliminar esta tarea?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        student.tasks = student.tasks.filter(t => t.id !== task.id);
+                        saveData();
+                        displayAdminTasks();
+                        Swal.fire(
+                            '¡Eliminado!',
+                            'La tarea ha sido eliminada.',
+                            'success'
+                        );
+                    }
+                });
             });
 
             taskDiv.appendChild(gradeInput);
@@ -531,14 +626,31 @@ function displayAdminTasks() {
 
 // Cerrar sesión (funciona para estudiante y administrador)
 document.getElementById('logout-btn').addEventListener('click', function() {
-    currentStudent = null;
-    isAdmin = false;
-    saveData(); // Limpiar datos de sesión
-    document.getElementById('login-interface').style.display = 'block';
-    document.getElementById('student-interface').style.display = 'none';
-    document.getElementById('admin-interface').style.display = 'none';
-    document.getElementById('switch-interface').style.display = 'none';
-    document.getElementById('logout-btn').style.display = 'none'; // Ocultar botón de cerrar sesión
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¿Estás seguro de que deseas cerrar sesión?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, cerrar sesión'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            currentStudent = null;
+            isAdmin = false;
+            saveData(); // Limpiar datos de sesión
+            document.getElementById('login-interface').style.display = 'block';
+            document.getElementById('student-interface').style.display = 'none';
+            document.getElementById('admin-interface').style.display = 'none';
+            document.getElementById('switch-interface').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'none'; // Ocultar botón de cerrar sesión
+            Swal.fire(
+                '¡Sesión cerrada!',
+                'Has cerrado sesión correctamente.',
+                'success'
+            );
+        }
+    });
 });
 
 // Verificar si hay una sesión activa al cargar la página
