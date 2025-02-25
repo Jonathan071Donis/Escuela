@@ -133,7 +133,7 @@ document.querySelectorAll('.upload-btn').forEach(button => {
     });
 });
 
-// Tomar fotos (versión mejorada para dispositivos móviles)
+// Tomar fotos con selector de cámara (frontal o trasera)
 document.querySelectorAll('.take-photo-btn').forEach(button => {
     button.addEventListener('click', function() {
         if (!currentStudent) {
@@ -176,6 +176,17 @@ document.querySelectorAll('.take-photo-btn').forEach(button => {
         captureButton.style.borderRadius = '5px';
         captureButton.style.cursor = 'pointer';
 
+        // Crear el botón para cambiar de cámara
+        const switchCameraButton = document.createElement('button');
+        switchCameraButton.textContent = 'Cambiar a Cámara Trasera';
+        switchCameraButton.style.marginTop = '10px';
+        switchCameraButton.style.padding = '10px 20px';
+        switchCameraButton.style.backgroundColor = '#28a745';
+        switchCameraButton.style.color = 'white';
+        switchCameraButton.style.border = 'none';
+        switchCameraButton.style.borderRadius = '5px';
+        switchCameraButton.style.cursor = 'pointer';
+
         // Crear el botón para cerrar la cámara
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Cerrar Cámara';
@@ -190,62 +201,90 @@ document.querySelectorAll('.take-photo-btn').forEach(button => {
         // Agregar elementos al contenedor
         cameraContainer.appendChild(video);
         cameraContainer.appendChild(captureButton);
+        cameraContainer.appendChild(switchCameraButton);
         cameraContainer.appendChild(closeButton);
         document.body.appendChild(cameraContainer);
 
-        // Acceder a la cámara
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
+        let currentStream = null;
+        let usingFrontCamera = true; // Por defecto, usar la cámara frontal
 
-                // Capturar foto
-                captureButton.addEventListener('click', async function() {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    const context = canvas.getContext('2d');
-                    context.drawImage(video, 0, 0);
+        // Función para iniciar la cámara
+        function startCamera(facingMode) {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop()); // Detener la transmisión actual
+            }
 
-                    canvas.toBlob(async blob => {
-                        try {
-                            const base64 = await fileToBase64(blob);
-                            const task = {
-                                id: currentStudent.tasks.length + 1,
-                                course: course,
-                                file: {
-                                    name: 'foto.jpg',
-                                    type: 'image/jpeg',
-                                    base64: base64 // Guardar la foto en base64
-                                },
-                                grade: null,
-                                comment: null
-                            };
+            const constraints = {
+                video: { facingMode: facingMode }
+            };
 
-                            currentStudent.tasks.push(task);
-                            saveData();
-                            alert("Foto subida correctamente.");
-                        } catch (error) {
-                            console.error("Error al convertir la foto a base64:", error);
-                            alert("Hubo un error al capturar la foto. Inténtalo de nuevo.");
-                        }
-                    }, 'image/jpeg');
-
-                    // Limpiar
-                    stream.getTracks().forEach(track => track.stop());
-                    cameraContainer.remove(); // Eliminar el contenedor de la cámara
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(stream => {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                })
+                .catch(error => {
+                    console.error("Error accediendo a la cámara: ", error);
+                    alert("No se pudo acceder a la cámara. Asegúrate de permitir el acceso.");
+                    cameraContainer.remove(); // Eliminar el contenedor si hay un error
                 });
+        }
 
-                // Cerrar la cámara
-                closeButton.addEventListener('click', function() {
-                    stream.getTracks().forEach(track => track.stop());
-                    cameraContainer.remove(); // Eliminar el contenedor de la cámara
-                });
-            })
-            .catch(error => {
-                console.error("Error accediendo a la cámara: ", error);
-                alert("No se pudo acceder a la cámara. Asegúrate de permitir el acceso.");
-                cameraContainer.remove(); // Eliminar el contenedor si hay un error
-            });
+        // Iniciar con la cámara frontal por defecto
+        startCamera('user');
+
+        // Cambiar entre cámara frontal y trasera
+        switchCameraButton.addEventListener('click', function() {
+            usingFrontCamera = !usingFrontCamera; // Alternar entre frontal y trasera
+            const facingMode = usingFrontCamera ? 'user' : 'environment';
+            switchCameraButton.textContent = usingFrontCamera ? 'Cambiar a Cámara Trasera' : 'Cambiar a Cámara Frontal';
+            startCamera(facingMode);
+        });
+
+        // Capturar foto
+        captureButton.addEventListener('click', async function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0);
+
+            canvas.toBlob(async blob => {
+                try {
+                    const base64 = await fileToBase64(blob);
+                    const task = {
+                        id: currentStudent.tasks.length + 1,
+                        course: course,
+                        file: {
+                            name: 'foto.jpg',
+                            type: 'image/jpeg',
+                            base64: base64 // Guardar la foto en base64
+                        },
+                        grade: null,
+                        comment: null
+                    };
+
+                    currentStudent.tasks.push(task);
+                    saveData();
+                    alert("Foto subida correctamente.");
+                } catch (error) {
+                    console.error("Error al convertir la foto a base64:", error);
+                    alert("Hubo un error al capturar la foto. Inténtalo de nuevo.");
+                }
+            }, 'image/jpeg');
+
+            // Limpiar
+            currentStream.getTracks().forEach(track => track.stop());
+            cameraContainer.remove(); // Eliminar el contenedor de la cámara
+        });
+
+        // Cerrar la cámara
+        closeButton.addEventListener('click', function() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            cameraContainer.remove(); // Eliminar el contenedor de la cámara
+        });
     });
 });
 
@@ -490,7 +529,7 @@ function displayAdminTasks() {
     });
 }
 
-// Cerrar sesión
+// Cerrar sesión (funciona para estudiante y administrador)
 document.getElementById('logout-btn').addEventListener('click', function() {
     currentStudent = null;
     isAdmin = false;
