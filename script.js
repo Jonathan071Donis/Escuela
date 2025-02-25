@@ -80,6 +80,14 @@ document.getElementById('login-btn').addEventListener('click', function() {
         document.getElementById('switch-interface').style.display = 'block';
         document.getElementById('logout-btn').style.display = 'block'; // Mostrar botón de cerrar sesión
         showWelcomeModal(studentName);
+
+        // Mostrar alerta de SweetAlert2
+        Swal.fire({
+            title: '¡Éxito!',
+            text: 'Has iniciado sesión correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar'
+        });
     }
 });
 
@@ -457,14 +465,4 @@ window.addEventListener('load', function() {
         document.getElementById('logout-btn').style.display = 'block';
         displayAdminTasks();
     }
-});
-
-// Ejemplo de alerta con SweetAlert2
-document.getElementById('login-btn').addEventListener('click', function () {
-    Swal.fire({
-        title: '¡Éxito!',
-        text: 'Has iniciado sesión correctamente.',
-        icon: 'success',
-        confirmButtonText: 'Aceptar'
-    });
 });
