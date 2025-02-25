@@ -133,7 +133,7 @@ document.querySelectorAll('.upload-btn').forEach(button => {
     });
 });
 
-// Tomar fotos
+// Tomar fotos (versión mejorada para dispositivos móviles)
 document.querySelectorAll('.take-photo-btn').forEach(button => {
     button.addEventListener('click', function() {
         if (!currentStudent) {
@@ -142,19 +142,63 @@ document.querySelectorAll('.take-photo-btn').forEach(button => {
         }
 
         const course = this.closest('.course-card').getAttribute('data-course');
+
+        // Crear un contenedor para la cámara
+        const cameraContainer = document.createElement('div');
+        cameraContainer.style.position = 'fixed';
+        cameraContainer.style.top = '0';
+        cameraContainer.style.left = '0';
+        cameraContainer.style.width = '100%';
+        cameraContainer.style.height = '100%';
+        cameraContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        cameraContainer.style.display = 'flex';
+        cameraContainer.style.flexDirection = 'column';
+        cameraContainer.style.justifyContent = 'center';
+        cameraContainer.style.alignItems = 'center';
+        cameraContainer.style.zIndex = '1000'; // Asegurar que esté por encima de todo
+
+        // Crear el elemento de video
         const video = document.createElement('video');
         video.setAttribute('autoplay', true);
-        video.setAttribute('playsinline', true);
-        document.body.appendChild(video);
+        video.setAttribute('playsinline', true); // Importante para dispositivos móviles
+        video.style.width = '100%';
+        video.style.maxWidth = '500px'; // Limitar el ancho máximo
+        video.style.borderRadius = '10px';
+
+        // Crear el botón de captura
+        const captureButton = document.createElement('button');
+        captureButton.textContent = 'Capturar Foto';
+        captureButton.style.marginTop = '20px';
+        captureButton.style.padding = '10px 20px';
+        captureButton.style.backgroundColor = '#007bff';
+        captureButton.style.color = 'white';
+        captureButton.style.border = 'none';
+        captureButton.style.borderRadius = '5px';
+        captureButton.style.cursor = 'pointer';
+
+        // Crear el botón para cerrar la cámara
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Cerrar Cámara';
+        closeButton.style.marginTop = '10px';
+        closeButton.style.padding = '10px 20px';
+        closeButton.style.backgroundColor = '#dc3545';
+        closeButton.style.color = 'white';
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '5px';
+        closeButton.style.cursor = 'pointer';
+
+        // Agregar elementos al contenedor
+        cameraContainer.appendChild(video);
+        cameraContainer.appendChild(captureButton);
+        cameraContainer.appendChild(closeButton);
+        document.body.appendChild(cameraContainer);
 
         // Acceder a la cámara
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
-                const captureButton = document.createElement('button');
-                captureButton.textContent = 'Capturar Foto';
-                document.body.appendChild(captureButton);
 
+                // Capturar foto
                 captureButton.addEventListener('click', async function() {
                     const canvas = document.createElement('canvas');
                     canvas.width = video.videoWidth;
@@ -188,12 +232,19 @@ document.querySelectorAll('.take-photo-btn').forEach(button => {
 
                     // Limpiar
                     stream.getTracks().forEach(track => track.stop());
-                    video.remove();
-                    captureButton.remove();
+                    cameraContainer.remove(); // Eliminar el contenedor de la cámara
                 });
-            }).catch(error => {
+
+                // Cerrar la cámara
+                closeButton.addEventListener('click', function() {
+                    stream.getTracks().forEach(track => track.stop());
+                    cameraContainer.remove(); // Eliminar el contenedor de la cámara
+                });
+            })
+            .catch(error => {
                 console.error("Error accediendo a la cámara: ", error);
                 alert("No se pudo acceder a la cámara. Asegúrate de permitir el acceso.");
+                cameraContainer.remove(); // Eliminar el contenedor si hay un error
             });
     });
 });
