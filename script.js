@@ -136,7 +136,7 @@ document.querySelectorAll('.upload-btn').forEach(button => {
                     saveData();
                     Swal.fire({
                         title: '¡Éxito!',
-                        text: 'Archivo subido correctamente.',
+                        text: `Archivo subido correctamente para el curso: ${course}.`,
                         icon: 'success',
                         confirmButtonText: 'Aceptar'
                     });
@@ -340,8 +340,12 @@ document.querySelectorAll('.view-files-btn').forEach(button => {
 
         const course = this.closest('.course-card').getAttribute('data-course');
         const files = currentStudent.tasks
-            .filter(task => task.course === course && task.file && !task.file.type.startsWith('image')) // Solo archivos, no imágenes
-            .map(task => task.file);
+            .filter(task => task.course === course && task.file) // Filtrar por curso y que tenga archivo
+            .map(task => ({
+                ...task.file,
+                grade: task.grade,
+                comment: task.comment
+            }));
 
         if (files.length === 0) {
             Swal.fire({
@@ -362,6 +366,7 @@ document.querySelectorAll('.view-files-btn').forEach(button => {
         modal.style.display = 'flex';
         modal.style.justifyContent = 'center';
         modal.style.alignItems = 'center';
+        modal.style.zIndex = '1000';
 
         const modalContent = document.createElement('div');
         modalContent.style.backgroundColor = 'white';
@@ -379,13 +384,25 @@ document.querySelectorAll('.view-files-btn').forEach(button => {
 
         files.forEach(file => {
             const fileDiv = document.createElement('div');
-            fileDiv.style.marginBottom = '10px';
+            fileDiv.style.marginBottom = '20px';
 
             const link = document.createElement('a');
             link.href = file.base64;
             link.textContent = file.name;
             link.download = file.name;
             fileDiv.appendChild(link);
+
+            if (file.grade !== null || file.comment !== null) {
+                const gradeDiv = document.createElement('div');
+                gradeDiv.textContent = `Calificación: ${file.grade !== null ? file.grade : 'Sin calificar'}`;
+                gradeDiv.style.marginTop = '10px';
+                fileDiv.appendChild(gradeDiv);
+
+                const commentDiv = document.createElement('div');
+                commentDiv.textContent = `Comentario: ${file.comment !== null ? file.comment : 'Sin comentario'}`;
+                commentDiv.style.marginTop = '10px';
+                fileDiv.appendChild(commentDiv);
+            }
 
             modalContent.appendChild(fileDiv);
         });
@@ -504,7 +521,7 @@ function displayAdminTasks() {
         const studentDiv = document.createElement('div');
         studentDiv.className = 'student';
         studentDiv.style.display = 'flex';
-        studentDiv.style.flexDirection = 'column'; // Mostrar los usuarios de forma vertical
+        studentDiv.style.flexDirection = 'column';
         studentDiv.innerHTML = `<h2>${student.name} - Grado: ${student.grade}</h2>`;
 
         // Botón para eliminar usuario
@@ -521,9 +538,9 @@ function displayAdminTasks() {
                 confirmButtonText: 'Sí, eliminar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    students.splice(index, 1); // Eliminar el usuario del array
+                    students.splice(index, 1);
                     saveData();
-                    displayAdminTasks(); // Actualizar la interfaz
+                    displayAdminTasks();
                     Swal.fire(
                         '¡Eliminado!',
                         'El usuario ha sido eliminado.',
@@ -538,12 +555,13 @@ function displayAdminTasks() {
         student.tasks.forEach(task => {
             const taskDiv = document.createElement('div');
             taskDiv.className = 'task';
+            taskDiv.innerHTML = `<h3>Curso: ${task.course}</h3>`; // Mostrar el curso
 
-            if (task.file && task.file.base64) { // Verificar si task.file y task.file.base64 existen
+            if (task.file && task.file.base64) {
                 if (task.file.type.startsWith('image')) {
                     const img = document.createElement('img');
                     img.src = task.file.base64;
-                    img.style.width = '100px'; // Ajustar tamaño de la imagen
+                    img.style.width = '100px';
                     taskDiv.appendChild(img);
                 } else {
                     const link = document.createElement('a');
@@ -552,8 +570,6 @@ function displayAdminTasks() {
                     link.download = task.file.name;
                     taskDiv.appendChild(link);
                 }
-            } else {
-                console.error("No hay archivo para la tarea:", task);
             }
 
             const gradeInput = document.createElement('input');
@@ -580,16 +596,17 @@ function displayAdminTasks() {
                 task.grade = gradeInput.value;
                 task.comment = commentInput.value;
                 saveData();
+                displayAdminTasks(); // Actualizar la interfaz del administrador
                 Swal.fire({
                     title: '¡Éxito!',
-                    text: 'Calificación y comentario subidos correctamente.',
+                    text: 'Tarea calificada con éxito.',
                     icon: 'success',
                     confirmButtonText: 'Aceptar'
                 });
             });
 
             const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Eliminar';
+            deleteButton.textContent = 'Eliminar Tarea';
             deleteButton.addEventListener('click', function() {
                 Swal.fire({
                     title: '¿Estás seguro?',
